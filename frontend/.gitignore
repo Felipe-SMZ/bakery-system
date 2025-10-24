@@ -1,0 +1,42 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependency directories
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Local env files
+*.local
+.env
+.env.*.local
+
+# IDE/editor folders
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+
+# Windows-specific files
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Tailwind JIT cache (se estiver usando)
+.tailwind/
+
+# Optional: coverage reports
+coverage/
+
+# Optional: system files
+Thumbs.db
