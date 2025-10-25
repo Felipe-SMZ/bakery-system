@@ -25,22 +25,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// Teste de conexão com banco
-app.get('/test-db', async (req, res) => {
-  try {
-    const [rows] = await db.query('SELECT 1 + 1 AS result');
-    res.json({
-      message: 'Conexão com banco OK!',
-      result: rows[0].result
-    });
-  } catch (error) {
-    res.status(500).json({
-      error: 'Erro ao conectar no banco',
-      details: error.message
-    });
-  }
-});
-
 // Rota de teste do banco de dados
 app.get('/test-db', async (req, res) => {
   try {
@@ -63,23 +47,13 @@ app.get('/test-db', async (req, res) => {
   }
 });
 
-// Rota para listar produtos (teste rápido)
-app.get('/api/produtos/test', async (req, res) => {
-  try {
-    const [produtos] = await db.query('SELECT * FROM Produto LIMIT 5');
-    res.json({
-      success: true,
-      total: produtos.length,
-      produtos: produtos
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Erro ao buscar produtos',
-      details: error.message
-    });
-  }
-});
+// Importar rotas
+const tipoProdutoRoutes = require('./src/routes/tipoProdutoRoutes');
+const produtoRoutes = require('./src/routes/produtoRoutes');
+
+// Rotas da API
+app.use('/api/tipos-produto', tipoProdutoRoutes);
+app.use('/api/produtos', produtoRoutes);
 
 // Middleware de erro 404
 app.use((req, res) => {
