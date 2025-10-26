@@ -51,11 +51,13 @@ app.get('/test-db', async (req, res) => {
 const tipoProdutoRoutes = require('./src/routes/tipoProdutoRoutes');
 const produtoRoutes = require('./src/routes/produtoRoutes');
 const clienteRoutes = require('./src/routes/clienteRoutes');
+const funcionarioRoutes = require('./src/routes/funcionarioRoutes');
 
 // Rotas da API
 app.use('/api/tipos-produto', tipoProdutoRoutes);
 app.use('/api/produtos', produtoRoutes);
 app.use('/api/clientes', clienteRoutes);
+app.use('/api/funcionarios', funcionarioRoutes);
 
 // Middleware de erro 404
 app.use((req, res) => {
