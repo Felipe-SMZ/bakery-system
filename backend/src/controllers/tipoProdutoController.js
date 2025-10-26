@@ -1,12 +1,13 @@
 // src/controllers/tipoProdutoController.js
-const TipoProdutoModel = require('../models/tipoProdutoModel');
+const TipoProdutoService = require('../services/tipoProdutoService');
 
 class TipoProdutoController {
 
     // GET /api/tipos-produto
     static async listarTodos(req, res) {
         try {
-            const tipos = await TipoProdutoModel.listarTodos();
+            const tipos = await TipoProdutoService.listarTodos();
+
             res.json({
                 success: true,
                 total: tipos.length,
@@ -24,21 +25,16 @@ class TipoProdutoController {
     static async buscarPorId(req, res) {
         try {
             const { id } = req.params;
-            const tipo = await TipoProdutoModel.buscarPorId(id);
-
-            if (!tipo) {
-                return res.status(404).json({
-                    success: false,
-                    error: 'Tipo de produto não encontrado'
-                });
-            }
+            const tipo = await TipoProdutoService.buscarPorId(id);
 
             res.json({
                 success: true,
                 data: tipo
             });
         } catch (error) {
-            res.status(500).json({
+            const statusCode = error.message.includes('não encontrado') ? 404 : 500;
+
+            res.status(statusCode).json({
                 success: false,
                 error: error.message
             });
@@ -48,22 +44,12 @@ class TipoProdutoController {
     // POST /api/tipos-produto
     static async criar(req, res) {
         try {
-            const { nome_tipo } = req.body;
-
-            // Validação
-            if (!nome_tipo || nome_tipo.trim() === '') {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Nome do tipo é obrigatório'
-                });
-            }
-
-            const id = await TipoProdutoModel.criar({ nome_tipo: nome_tipo.trim() });
+            const resultado = await TipoProdutoService.criar(req.body);
 
             res.status(201).json({
                 success: true,
                 message: 'Tipo de produto criado com sucesso',
-                data: { id, nome_tipo }
+                data: resultado
             });
         } catch (error) {
             res.status(400).json({
@@ -77,34 +63,17 @@ class TipoProdutoController {
     static async atualizar(req, res) {
         try {
             const { id } = req.params;
-            const { nome_tipo } = req.body;
-
-            // Validação
-            if (!nome_tipo || nome_tipo.trim() === '') {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Nome do tipo é obrigatório'
-                });
-            }
-
-            // Verificar se existe
-            const existe = await TipoProdutoModel.existe(id);
-            if (!existe) {
-                return res.status(404).json({
-                    success: false,
-                    error: 'Tipo de produto não encontrado'
-                });
-            }
-
-            const affectedRows = await TipoProdutoModel.atualizar(id, { nome_tipo: nome_tipo.trim() });
+            const resultado = await TipoProdutoService.atualizar(id, req.body);
 
             res.json({
                 success: true,
                 message: 'Tipo de produto atualizado com sucesso',
-                data: { id, nome_tipo }
+                data: resultado
             });
         } catch (error) {
-            res.status(400).json({
+            const statusCode = error.message.includes('não encontrado') ? 404 : 400;
+
+            res.status(statusCode).json({
                 success: false,
                 error: error.message
             });
@@ -115,24 +84,16 @@ class TipoProdutoController {
     static async deletar(req, res) {
         try {
             const { id } = req.params;
-
-            // Verificar se existe
-            const existe = await TipoProdutoModel.existe(id);
-            if (!existe) {
-                return res.status(404).json({
-                    success: false,
-                    error: 'Tipo de produto não encontrado'
-                });
-            }
-
-            await TipoProdutoModel.deletar(id);
+            await TipoProdutoService.deletar(id);
 
             res.json({
                 success: true,
                 message: 'Tipo de produto deletado com sucesso'
             });
         } catch (error) {
-            res.status(400).json({
+            const statusCode = error.message.includes('não encontrado') ? 404 : 400;
+
+            res.status(statusCode).json({
                 success: false,
                 error: error.message
             });
