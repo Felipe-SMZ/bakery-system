@@ -42,8 +42,8 @@ bakery-system/
 
 ### 📚 Documentação
 
-- [Requisitos Funcionais](docs/requisitos-funcionais.md)  
-- [Documentação da API](docs/api-documentacao.md)  
+- [Requisitos Funcionais](docs/requisitos.md)  
+- [Documentação da API](docs/API.md)  
 - Coleção Insomnia disponível para testes  
 - Swagger em processo de integração para documentação interativa
 
