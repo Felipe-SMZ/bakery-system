@@ -1224,7 +1224,9 @@ GET /api/relatorios/produtos-estoque-baixo
 ## 📞 Suporte
 
 **Desenvolvedor:** Felipe Shimizu
+
 **Portifólio:** https://www.devfelipeshimizu.me/
+
 **GitHub:** https://github.com/Felipe-SMZ/bakery-system
 
 
