@@ -21,14 +21,23 @@ import { Menu, ShoppingBag } from 'lucide-react';
 const Navbar = ({ toggleSidebar }) => {
 
     return (
-        /**
-         * Container da Navbar
-         * - fixed top-0: Fixa no topo da página
-         * - w-full: Largura total
-         * - z-50: Fica acima de outros elementos
-         */
-        <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50 h-16">
-            <div className="flex items-center justify-between h-full px-6">
+        <nav 
+            style={{ 
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '64px',
+                backgroundColor: 'white',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                zIndex: 1000,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0 24px'
+            }}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
 
                 {/**
          * ═══════════════════════════════════════════════

@@ -61,54 +61,51 @@ const Layout = () => {
     // ============================================================
 
     return (
-        <div className="min-h-screen bg-gray-100">
+        <div style={{ 
+            minHeight: '100vh', 
+            backgroundColor: '#f3f4f6', 
+            position: 'relative',
+            margin: 0,
+            padding: 0
+        }}>
             {/**
-       * Navbar: Barra superior
-       * - Fixa no topo
-       * - Recebe função para abrir/fechar sidebar
-       */}
+             * Navbar: Barra superior fixa
+             * - z-index: 1000 (sempre visível no topo)
+             * - height: 64px
+             */}
             <Navbar toggleSidebar={toggleSidebar} />
 
             {/**
-       * Container principal: Sidebar + Conteúdo
-       * - flex: Coloca um ao lado do outro
-       */}
-            <div className="flex pt-16">
-                {/* pt-16: padding-top para não ficar atrás da navbar */}
+             * Sidebar: Menu lateral fixo
+             * - z-index: 500 (abaixo da navbar)
+             * - top: 64px (começa abaixo da navbar)
+             */}
+            <Sidebar isOpen={sidebarAberta} />
 
+            <main
+                style={{
+                    marginTop: '64px',
+                    marginLeft: sidebarAberta ? '256px' : '80px',
+                    transition: 'margin-left 0.3s ease',
+                    minHeight: 'calc(100vh - 64px)',
+                    padding: '24px',
+                    position: 'relative',
+                    zIndex: 1,
+                    backgroundColor: '#f3f4f6'
+                }}
+            >
                 {/**
-         * Sidebar: Menu lateral
-         * - Recebe estado se está aberta ou não
-         */}
-                <Sidebar isOpen={sidebarAberta} />
-
-                {/**
-         * Área de conteúdo: Onde as páginas aparecem
-         * - flex-1: Ocupa todo espaço restante
-         * - Outlet: Renderiza o componente da rota atual
-         */}
-                <main
-                    className={`
-            flex-1 
-            p-6 
-            transition-all 
-            duration-300
-            ${sidebarAberta ? 'ml-64' : 'ml-20'}
-          `}
-                >
-                    {/**
-           * Outlet: Componente especial do React Router
-           * 
-           * Renderiza o componente da rota filho.
-           * 
-           * Se URL = /dashboard → <Dashboard />
-           * Se URL = /produtos  → <Produtos />
-           * 
-           * É como um "placeholder" que muda!
-           */}
-                    <Outlet />
-                </main>
-            </div>
+                 * Outlet: Componente especial do React Router
+                 * 
+                 * Renderiza o componente da rota filho.
+                 * 
+                 * Se URL = /dashboard → <Dashboard />
+                 * Se URL = /produtos  → <Produtos />
+                 * 
+                 * É como um "placeholder" que muda!
+                 */}
+                <Outlet />
+            </main>
         </div>
     );
 };

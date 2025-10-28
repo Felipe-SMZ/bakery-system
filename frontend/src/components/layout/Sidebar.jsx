@@ -81,27 +81,19 @@ const Sidebar = ({ isOpen }) => {
     // ══════════════════════════════════════════════════════════
 
     return (
-        /**
-         * Container do Sidebar
-         * - fixed: Fixa na lateral
-         * - top-16: Começa abaixo da navbar (64px)
-         * - left-0: Encostado na esquerda
-         * - h-[calc(100vh-4rem)]: Altura = tela inteira - navbar
-         * - Largura muda: w-64 (aberto) ou w-20 (fechado)
-         */
         <aside
-            className={`
-        fixed
-        top-16
-        left-0
-        h-[calc(100vh-4rem)]
-        bg-white
-        shadow-lg
-        transition-all
-        duration-300
-        overflow-y-auto
-        ${isOpen ? 'w-64' : 'w-20'}
-      `}
+            style={{ 
+                position: 'fixed',
+                top: '64px',
+                left: 0,
+                height: 'calc(100vh - 64px)',
+                zIndex: 500,
+                width: isOpen ? '256px' : '80px',
+                transition: 'width 0.3s ease',
+                backgroundColor: 'white',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                overflowY: 'auto'
+            }}
         >
             {/**
        * Lista de navegação
