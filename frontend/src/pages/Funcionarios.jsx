@@ -7,6 +7,7 @@ import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import Loading from '../components/common/Loading';
 import Modal from '../components/common/Modal';
+import Tabs from '../components/common/Tabs';
 import {
     listarFuncionarios,
     criarFuncionario,
@@ -387,40 +388,18 @@ function Funcionarios() {
             </div>
 
             {/* ===== ABAS ===== */}
-            <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-8">
-                    <button
-                        onClick={() => setAbaAtiva('funcionarios')}
-                        className={`
-                            py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2
-                            ${abaAtiva === 'funcionarios'
-                                ? 'border-primary-500 text-primary-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            }
-                        `}
-                    >
-                        <Users size={20} />
-                        Funcionários ({funcionarios.length})
-                    </button>
-                    <button
-                        onClick={() => setAbaAtiva('cargos')}
-                        className={`
-                            py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2
-                            ${abaAtiva === 'cargos'
-                                ? 'border-primary-500 text-primary-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            }
-                        `}
-                    >
-                        <Briefcase size={20} />
-                        Cargos ({cargos.length})
-                    </button>
-                </nav>
-            </div>
+            <Tabs value={abaAtiva} onChange={setAbaAtiva}>
+                <Tabs.List>
+                    <Tabs.Tab value="funcionarios" icon={<Users size={20} />} badge={funcionarios.length}>
+                        Funcionários
+                    </Tabs.Tab>
+                    <Tabs.Tab value="cargos" icon={<Briefcase size={20} />} badge={cargos.length}>
+                        Cargos
+                    </Tabs.Tab>
+                </Tabs.List>
 
-            {/* ===== CONTEÚDO DAS ABAS ===== */}
-            {abaAtiva === 'funcionarios' ? (
-                <>
+                {/* ===== CONTEÚDO: ABA FUNCIONÁRIOS ===== */}
+                <Tabs.Content value="funcionarios">
                     {/* ===== CARD DE FILTROS ===== */}
                     <Card>
                         <Card.Body>
@@ -604,10 +583,10 @@ function Funcionarios() {
                     </div>
                 </form>
             </Modal>
-                </>
-            ) : (
-                /* ===== ABA DE CARGOS ===== */
-                <>
+                </Tabs.Content>
+
+                {/* ===== CONTEÚDO: ABA CARGOS ===== */}
+                <Tabs.Content value="cargos">
                     <Card>
                         <Card.Body noPadding>
                             {cargos.length === 0 ? (
@@ -724,8 +703,8 @@ function Funcionarios() {
                             </div>
                         </form>
                     </Modal>
-                </>
-            )}
+                </Tabs.Content>
+            </Tabs>
         </div>
     );
 }
