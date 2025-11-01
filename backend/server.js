@@ -54,6 +54,7 @@ const clienteRoutes = require('./src/routes/clienteRoutes');
 const funcionarioRoutes = require('./src/routes/funcionarioRoutes');
 const vendaRoutes = require('./src/routes/vendaRoutes');
 const relatorioRoutes = require('./src/routes/relatorioRoutes');
+const cargoRoutes = require('./src/routes/cargoRoutes');
 
 // Rotas da API
 app.use('/api/tipos-produto', tipoProdutoRoutes);
@@ -62,6 +63,7 @@ app.use('/api/clientes', clienteRoutes);
 app.use('/api/funcionarios', funcionarioRoutes);
 app.use('/api/vendas', vendaRoutes);
 app.use('/api/relatorios', relatorioRoutes);
+app.use('/api/cargos', cargoRoutes);
 
 // Middleware de erro 404
 app.use((req, res) => {

@@ -47,6 +47,35 @@ class CargoModel {
         );
         return rows[0].total;
     }
+
+    // Adicione estes métodos no seu cargoModel.js
+
+    // Criar novo cargo
+    static async criar(dados) {
+        const [result] = await db.query(
+            'INSERT INTO Cargo (Nome_Cargo) VALUES (?)',
+            [dados.nome_cargo]
+        );
+        return result.insertId;
+    }
+
+    // Atualizar cargo
+    static async atualizar(id, dados) {
+        const [result] = await db.query(
+            'UPDATE Cargo SET Nome_Cargo = ? WHERE ID_Cargo = ?',
+            [dados.nome_cargo, id]
+        );
+        return result.affectedRows;
+    }
+
+    // Deletar cargo
+    static async deletar(id) {
+        const [result] = await db.query(
+            'DELETE FROM Cargo WHERE ID_Cargo = ?',
+            [id]
+        );
+        return result.affectedRows;
+    }
 }
 
 module.exports = CargoModel;

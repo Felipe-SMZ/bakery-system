@@ -27,7 +27,6 @@ import NovaVenda from './pages/NovaVenda';
 import Vendas from './pages/Vendas';
 import Relatorios from './pages/Relatorios';
 
-
 // Importar rotas das constantes
 import { ROTAS } from './utils/constants';
 
@@ -55,11 +54,11 @@ function App() {
          * Rota Raiz: Redireciona / para /dashboard
          * Navigate é como "redirect"
          */}
-        <Route 
-          path="/" 
-          element={<Navigate to={ROTAS.DASHBOARD} replace />} 
+        <Route
+          path="/"
+          element={<Navigate to={ROTAS.DASHBOARD} replace />}
         />
-        
+
         {/**
          * Rotas com Layout
          * - Todas as rotas principais usam o mesmo Layout
@@ -72,71 +71,71 @@ function App() {
            * - element: Componente a renderizar
            * - index: Rota padrão do pai
            */}
-          
+
           {/* Dashboard - Página Inicial */}
-          <Route 
-            path={ROTAS.DASHBOARD} 
-            element={<Dashboard />} 
+          <Route
+            path={ROTAS.DASHBOARD}
+            element={<Dashboard />}
           />
-          
+
           {/* Produtos - CRUD de Produtos */}
-          <Route 
-            path={ROTAS.PRODUTOS} 
-            element={<Produtos />} 
+          <Route
+            path={ROTAS.PRODUTOS}
+            element={<Produtos />}
           />
-          
+
           {/* Clientes - CRUD de Clientes */}
-          <Route 
-            path={ROTAS.CLIENTES} 
-            element={<Clientes />} 
+          <Route
+            path={ROTAS.CLIENTES}
+            element={<Clientes />}
           />
-          
+
           {/* Funcionários - CRUD de Funcionários */}
-          <Route 
-            path={ROTAS.FUNCIONARIOS} 
-            element={<Funcionarios />} 
+          <Route
+            path="/funcionarios"
+            element={<Funcionarios />}
           />
-          
+
           {/* Nova Venda - Tela de Registro de Venda */}
-          <Route 
-            path={ROTAS.NOVA_VENDA} 
-            element={<NovaVenda />} 
+          <Route
+            path={ROTAS.NOVA_VENDA}
+            element={<NovaVenda />}
           />
-          
+
           {/* Vendas - Lista de Vendas */}
-          <Route 
-            path={ROTAS.VENDAS} 
-            element={<Vendas />} 
+          <Route
+            path={ROTAS.VENDAS}
+            element={<Vendas />}
           />
-          
+
           {/* Relatórios - Dashboards e Relatórios */}
-          <Route 
-            path={ROTAS.RELATORIOS} 
-            element={<Relatorios />} 
+          <Route
+            path={ROTAS.RELATORIOS}
+            element={<Relatorios />}
           />
         </Route>
-        
+
         {/**
          * Rota 404: Página não encontrada
          * - Captura qualquer rota não definida acima
          * - * significa "qualquer coisa"
          */}
-        <Route 
-          path="*" 
+        <Route
+          path="*"
           element={
             <div className="flex items-center justify-center h-screen">
               <div className="text-center">
                 <h1 className="text-6xl font-bold text-gray-800">404</h1>
                 <p className="text-xl text-gray-600 mt-4">Página não encontrada</p>
-                <a 
-                  href={ROTAS.DASHBOARD} 
+                <a
+                  href={ROTAS.DASHBOARD}
                   className="text-blue-600 hover:underline mt-4 inline-block"
                 >
                   Voltar para o Dashboard
                 </a>
               </div>
             </div>
-          } 
+          }
         />
       </Routes>
     </BrowserRouter>
