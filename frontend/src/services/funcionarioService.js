@@ -9,6 +9,22 @@
 
 import api from './api';
 
+/**
+ * Helper: Constrói payload limpo para API de funcionários
+ * 
+ * O backend espera os campos em snake_case minúsculo:
+ * - nome (string) - nome do funcionário
+ * - id_cargo (number) - ID do cargo
+ * 
+ * Fonte: backend/src/services/funcionarioService.js - método validarDadosFuncionario
+ */
+const buildFuncionarioPayload = (dados) => {
+    return {
+        nome: dados.Nome.trim(),
+        id_cargo: parseInt(dados.ID_Cargo)
+    };
+};
+
 // ============================================================
 // 📋 LISTAR FUNCIONÁRIOS
 // ============================================================
@@ -84,10 +100,12 @@ export const buscarFuncionarioPorId = async (id) => {
  */
 export const criarFuncionario = async (dados) => {
     try {
-        const response = await api.post('/funcionarios', dados);
+        const payload = buildFuncionarioPayload(dados);
+        const response = await api.post('/funcionarios', payload);
         return response.data.data;
     } catch (error) {
         console.error('Erro ao criar funcionário:', error);
+        console.error('Resposta do servidor:', error.response?.status, error.response?.data);
         throw error;
     }
 };
@@ -105,10 +123,12 @@ export const criarFuncionario = async (dados) => {
  */
 export const atualizarFuncionario = async (id, dados) => {
     try {
-        const response = await api.put(`/funcionarios/${id}`, dados);
+        const payload = buildFuncionarioPayload(dados);
+        const response = await api.put(`/funcionarios/${id}`, payload);
         return response.data;
     } catch (error) {
         console.error('Erro ao atualizar funcionário:', error);
+        console.error('Resposta do servidor:', error.response?.status, error.response?.data);
         throw error;
     }
 };

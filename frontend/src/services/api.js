@@ -44,9 +44,6 @@ const api = axios.create({
  */
 api.interceptors.request.use(
     (config) => {
-        // Mostra no console qual requisição está sendo feita (ajuda debugar)
-        console.log(`🚀 Requisição: ${config.method.toUpperCase()} ${config.url}`);
-
         // Aqui você pode adicionar token de autenticação no futuro:
         // const token = localStorage.getItem('token');
         // if (token) {
@@ -77,7 +74,6 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => {
         // Resposta com sucesso (status 200, 201, etc)
-        console.log(`✅ Resposta: ${response.config.url}`, response.data);
         return response;
     },
     (error) => {
@@ -85,15 +81,10 @@ api.interceptors.response.use(
 
         if (error.response) {
             // Servidor respondeu com erro
-            const { status, data } = error.response;
-
-            console.error(`❌ Erro ${status}:`, data.error || data.message);
+            const { status } = error.response;
 
             // Tratamento específico por tipo de erro
             switch (status) {
-                case 400:
-                    console.error('📛 Dados inválidos enviados');
-                    break;
                 case 401:
                     console.error('🔒 Não autorizado - faça login');
                     // Aqui você pode redirecionar pro login no futuro

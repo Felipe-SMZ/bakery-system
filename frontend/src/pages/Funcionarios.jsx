@@ -201,9 +201,18 @@ function Funcionarios() {
 
         } catch (error) {
             console.error('Erro ao salvar funcionário:', error);
+            // Se o servidor retornou um array de erros, mostrar as mensagens
+            const serverErrors = error.response?.data?.errors;
+            if (Array.isArray(serverErrors) && serverErrors.length > 0) {
+                const detalhes = serverErrors.map(err => {
+                    if (typeof err === 'string') return err;
+                    if (err?.message) return err.message;
+                    return JSON.stringify(err);
+                }).join('\n');
 
-            // Trata erro de cargo não encontrado
-            if (error.response?.data?.error?.includes('Cargo')) {
+                alert('❌ Erro ao salvar funcionário:\n' + detalhes);
+            } else if (error.response?.data?.error?.includes('Cargo')) {
+                // Trata erro de cargo não encontrado (compatibilidade com mensagens antigas)
                 alert('❌ Cargo não encontrado. Selecione um cargo válido.');
             } else {
                 alert('❌ Erro ao salvar funcionário: ' + (error.response?.data?.error || error.message));
