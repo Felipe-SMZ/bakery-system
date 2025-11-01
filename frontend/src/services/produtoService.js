@@ -1,53 +1,49 @@
 // src/services/produtoService.js
 
-/**
- * 🍞 SERVICE DE PRODUTOS
- * 
- * Este arquivo concentra TODAS as requisições relacionadas a produtos.
- * 
- * Por que criar um service?
- * - Organização: todas as chamadas de produto em um só lugar
- * - Reutilização: vários componentes usam as mesmas funções
- * - Manutenção: se mudar a URL, muda só aqui
- */
-
 import api from './api';
+
+/**
+ * 📦 SERVIÇO DE PRODUTOS
+ * 
+ * Todas as funções que conversam com a API de produtos.
+ * Cada função retorna uma Promise (operação assíncrona).
+ */
 
 // ============================================================
 // 📋 LISTAR PRODUTOS
 // ============================================================
 
 /**
- * Busca todos os produtos
+ * Busca todos os produtos (com filtros opcionais)
  * 
- * @param {Object} filtros - Filtros opcionais (tipo, busca)
- * @returns {Promise<Array>} - Lista de produtos
+ * @param {Object} filtros - Filtros opcionais
+ * @param {Number} filtros.tipo - ID do tipo de produto
+ * @param {String} filtros.busca - Termo de busca no nome
+ * @returns {Promise} - Lista de produtos
  * 
  * Exemplo de uso:
- * const produtos = await listarProdutos();
- * const produtosFiltrados = await listarProdutos({ tipo: 1 });
+ * const produtos = await listarProdutos({ tipo: 1, busca: 'pao' });
  */
 export const listarProdutos = async (filtros = {}) => {
   try {
-    // Monta a URL com query params se houver filtros
-    // Exemplo: /produtos?tipo=1&busca=pao
+    // Monta os query parameters (?tipo=1&nome=pao)
     const params = new URLSearchParams();
-    
-    if (filtros.tipo) params.append('tipo', filtros.tipo);
-    if (filtros.busca) params.append('busca', filtros.busca);
-    
-    const queryString = params.toString();
-    const url = queryString ? `/produtos?${queryString}` : '/produtos';
-    
+
+    if (filtros.tipo) {
+      params.append('tipo', filtros.tipo);
+    }
+
+    if (filtros.busca) {
+      params.append('nome', filtros.busca); // ← MUDOU: de 'busca' para 'nome'
+    }
+
     // Faz a requisição GET
-    const response = await api.get(url);
-    
-    // Retorna só os dados (não toda a resposta)
-    return response.data.data;
-    
+    const response = await api.get(`/produtos?${params.toString()}`);
+
+    return response.data.data; // Retorna só o array de produtos
   } catch (error) {
     console.error('Erro ao listar produtos:', error);
-    throw error;
+    throw error; // Repassa o erro para quem chamou a função
   }
 };
 
@@ -59,19 +55,14 @@ export const listarProdutos = async (filtros = {}) => {
  * Busca um produto específico pelo ID
  * 
  * @param {Number} id - ID do produto
- * @returns {Promise<Object>} - Dados do produto
- * 
- * Exemplo de uso:
- * const produto = await buscarProdutoPorId(1);
+ * @returns {Promise} - Dados do produto
  */
 export const buscarProdutoPorId = async (id) => {
   try {
-    // GET /produtos/1
     const response = await api.get(`/produtos/${id}`);
     return response.data.data;
-    
   } catch (error) {
-    console.error(`Erro ao buscar produto ${id}:`, error);
+    console.error('Erro ao buscar produto:', error);
     throw error;
   }
 };
@@ -84,24 +75,17 @@ export const buscarProdutoPorId = async (id) => {
  * Cria um novo produto
  * 
  * @param {Object} dados - Dados do produto
- * @returns {Promise<Object>} - Produto criado
- * 
- * Exemplo de uso:
- * const novoProduto = await criarProduto({
- *   Nome: 'Pão Integral',
- *   ID_Tipo_Produto: 1,
- *   Unidade_Medida: 'unidade',
- *   Preco_Base: 0.80,
- *   Estoque_Atual: 50
- * });
+ * @param {String} dados.Nome - Nome do produto
+ * @param {Number} dados.ID_Tipo_Produto - ID do tipo
+ * @param {String} dados.Unidade_Medida - unidade, kg ou fatia
+ * @param {Number} dados.Preco_Base - Preço
+ * @param {Number} dados.Estoque_Atual - Estoque inicial
+ * @returns {Promise} - Produto criado
  */
 export const criarProduto = async (dados) => {
   try {
-    // POST /produtos
-    // Envia dados no corpo da requisição
     const response = await api.post('/produtos', dados);
     return response.data.data;
-    
   } catch (error) {
     console.error('Erro ao criar produto:', error);
     throw error;
@@ -116,20 +100,15 @@ export const criarProduto = async (dados) => {
  * Atualiza um produto existente
  * 
  * @param {Number} id - ID do produto
- * @param {Object} dados - Dados a serem atualizados
- * @returns {Promise<Object>} - Produto atualizado
- * 
- * Exemplo de uso:
- * await atualizarProduto(1, { Preco_Base: 0.90 });
+ * @param {Object} dados - Dados para atualizar
+ * @returns {Promise} - Confirmação
  */
 export const atualizarProduto = async (id, dados) => {
   try {
-    // PUT /produtos/1
     const response = await api.put(`/produtos/${id}`, dados);
     return response.data;
-    
   } catch (error) {
-    console.error(`Erro ao atualizar produto ${id}:`, error);
+    console.error('Erro ao atualizar produto:', error);
     throw error;
   }
 };
@@ -142,130 +121,58 @@ export const atualizarProduto = async (id, dados) => {
  * Deleta um produto
  * 
  * @param {Number} id - ID do produto
- * @returns {Promise<Object>} - Confirmação
- * 
- * Exemplo de uso:
- * await deletarProduto(1);
+ * @returns {Promise} - Confirmação
  */
 export const deletarProduto = async (id) => {
   try {
-    // DELETE /produtos/1
     const response = await api.delete(`/produtos/${id}`);
     return response.data;
-    
   } catch (error) {
-    console.error(`Erro ao deletar produto ${id}:`, error);
+    console.error('Erro ao deletar produto:', error);
     throw error;
   }
 };
 
 // ============================================================
-// 📦 AJUSTAR ESTOQUE
+// 🔄 AJUSTAR ESTOQUE
 // ============================================================
 
 /**
  * Ajusta o estoque de um produto
  * 
  * @param {Number} id - ID do produto
- * @param {Number} quantidade - Quantidade a ajustar (+ ou -)
+ * @param {Number} quantidade - Quantidade a adicionar (positivo) ou remover (negativo)
  * @param {String} motivo - Motivo do ajuste
- * @returns {Promise<Object>} - Confirmação
- * 
- * Exemplo de uso:
- * await ajustarEstoque(1, 50, 'Entrada de mercadoria');
- * await ajustarEstoque(1, -10, 'Perda');
+ * @returns {Promise} - Novo estoque
  */
 export const ajustarEstoque = async (id, quantidade, motivo) => {
   try {
-    // PATCH /produtos/1/estoque
     const response = await api.patch(`/produtos/${id}/estoque`, {
       quantidade,
       motivo
     });
-    return response.data;
-    
+    return response.data.data;
   } catch (error) {
-    console.error(`Erro ao ajustar estoque do produto ${id}:`, error);
+    console.error('Erro ao ajustar estoque:', error);
     throw error;
   }
 };
 
 // ============================================================
-// 📊 BUSCAR PRODUTOS POR TIPO
+// 📊 LISTAR TIPOS DE PRODUTO
 // ============================================================
 
 /**
- * Busca produtos de um tipo específico
+ * Busca todos os tipos de produto (para os filtros)
  * 
- * @param {Number} idTipo - ID do tipo de produto
- * @returns {Promise<Array>} - Lista de produtos
- * 
- * Exemplo de uso:
- * const paes = await buscarProdutosPorTipo(1);
+ * @returns {Promise} - Lista de tipos
  */
-export const buscarProdutosPorTipo = async (idTipo) => {
+export const listarTiposProduto = async () => {
   try {
-    // GET /produtos?tipo=1
-    return await listarProdutos({ tipo: idTipo });
-    
+    const response = await api.get('/tipos-produto');
+    return response.data.data;
   } catch (error) {
-    console.error(`Erro ao buscar produtos do tipo ${idTipo}:`, error);
+    console.error('Erro ao listar tipos:', error);
     throw error;
   }
 };
-
-// ============================================================
-// 🔍 BUSCAR PRODUTOS (AUTOCOMPLETE)
-// ============================================================
-
-/**
- * Busca produtos por nome (para autocomplete)
- * 
- * @param {String} termo - Termo de busca
- * @returns {Promise<Array>} - Lista de produtos
- * 
- * Exemplo de uso:
- * const produtos = await buscarProdutos('pao');
- */
-export const buscarProdutos = async (termo) => {
-  try {
-    // GET /produtos?busca=pao
-    if (!termo || termo.length < 2) {
-      return []; // Não busca com menos de 2 caracteres
-    }
-    
-    return await listarProdutos({ busca: termo });
-    
-  } catch (error) {
-    console.error('Erro ao buscar produtos:', error);
-    throw error;
-  }
-};
-
-// ============================================================
-// 📤 EXPORTAR TODAS AS FUNÇÕES COMO DEFAULT
-// ============================================================
-
-/**
- * Exporta um objeto com todas as funções
- * Permite usar de duas formas:
- * 
- * 1. Import nomeado:
- *    import { listarProdutos, criarProduto } from './produtoService';
- * 
- * 2. Import default:
- *    import produtoService from './produtoService';
- *    produtoService.listarProdutos();
- */
-const produtoService = {
-  listarProdutos,
-  buscarProdutoPorId,
-  criarProduto,
-  atualizarProduto,
-  deletarProduto,
-  ajustarEstoque,
-  buscarProdutosPorTipo,
-  buscarProdutos
-};
-
-export default produtoService;

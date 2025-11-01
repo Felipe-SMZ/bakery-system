@@ -4,24 +4,23 @@ const TipoProdutoModel = require('../models/tipoProdutoModel');
 
 class ProdutoService {
 
-    // Listar produtos (com filtros opcionais)
+    // ⭐ Listar produtos (com filtros opcionais combinados)
     static async listarProdutos(filtros = {}) {
         try {
             const { tipo, nome, estoque_baixo } = filtros;
 
-            if (tipo) {
-                return await ProdutoModel.filtrarPorTipo(tipo);
+            // Se tiver tipo OU nome (ou ambos), usa a função que combina
+            if (tipo || nome) {
+                return await ProdutoModel.listarComFiltros({ tipo, nome });
             }
 
-            if (nome) {
-                return await ProdutoModel.buscarPorNome(nome);
-            }
-
+            // Estoque baixo
             if (estoque_baixo) {
                 const limite = parseInt(estoque_baixo) || 50;
                 return await ProdutoModel.estoqueBaixo(limite);
             }
 
+            // Sem filtros: retorna todos
             return await ProdutoModel.listarTodos();
         } catch (error) {
             throw new Error('Erro ao listar produtos: ' + error.message);
