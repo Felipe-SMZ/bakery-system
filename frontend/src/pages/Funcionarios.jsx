@@ -1,7 +1,7 @@
 // src/pages/Funcionarios.jsx
 
 import { useState, useEffect } from 'react';
-import { Plus, Search, Pencil, Trash2, Users } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, Users, Briefcase } from 'lucide-react';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
@@ -13,7 +13,12 @@ import {
     atualizarFuncionario,
     deletarFuncionario
 } from '../services/funcionarioService';
-import { listarCargos } from '../services/cargoService';
+import { 
+    listarCargos, 
+    criarCargo, 
+    atualizarCargo, 
+    deletarCargo 
+} from '../services/cargoService';
 
 /**
  * 🧑‍💼 PÁGINA DE FUNCIONÁRIOS
@@ -30,6 +35,9 @@ function Funcionarios() {
     // 🗄️ ESTADOS
     // ========================================================
 
+    // Estado da aba ativa
+    const [abaAtiva, setAbaAtiva] = useState('funcionarios'); // 'funcionarios' ou 'cargos'
+    
     const [funcionarios, setFuncionarios] = useState([]);
     const [cargos, setCargos] = useState([]);
     const [carregando, setCarregando] = useState(true);
@@ -43,10 +51,19 @@ function Funcionarios() {
     const [funcionarioEditando, setFuncionarioEditando] = useState(null);
     const [salvando, setSalvando] = useState(false);
 
-    // Estado do Formulário (SIMPLES - só 2 campos!)
+    // Estado do Formulário de Funcionário
     const [formData, setFormData] = useState({
         Nome: '',
         ID_Cargo: ''
+    });
+
+    // Estados para Cargos
+    const [modalCargoAberto, setModalCargoAberto] = useState(false);
+    const [modoEdicaoCargo, setModoEdicaoCargo] = useState(false);
+    const [cargoEditando, setCargoEditando] = useState(null);
+    const [salvandoCargo, setSalvandoCargo] = useState(false);
+    const [formDataCargo, setFormDataCargo] = useState({
+        Nome_Cargo: ''
     });
 
     // ========================================================
@@ -250,7 +267,97 @@ function Funcionarios() {
     };
 
     // ========================================================
-    // 🎨 RENDERIZAÇÃO
+    // � HANDLERS DE CARGOS
+    // ========================================================
+
+    const abrirModalCriarCargo = () => {
+        setModoEdicaoCargo(false);
+        setCargoEditando(null);
+        setFormDataCargo({ Nome_Cargo: '' });
+        setModalCargoAberto(true);
+    };
+
+    const abrirModalEditarCargo = (cargo) => {
+        setModoEdicaoCargo(true);
+        setCargoEditando(cargo);
+        setFormDataCargo({ Nome_Cargo: cargo.Nome_Cargo });
+        setModalCargoAberto(true);
+    };
+
+    const fecharModalCargo = () => {
+        setModalCargoAberto(false);
+        setModoEdicaoCargo(false);
+        setCargoEditando(null);
+        setFormDataCargo({ Nome_Cargo: '' });
+    };
+
+    const handleChangeCargo = (e) => {
+        const { name, value } = e.target;
+        setFormDataCargo(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSubmitCargo = async (e) => {
+        e.preventDefault();
+
+        // Validar
+        if (!formDataCargo.Nome_Cargo || formDataCargo.Nome_Cargo.trim() === '') {
+            alert('❌ Nome do cargo é obrigatório');
+            return;
+        }
+
+        try {
+            setSalvandoCargo(true);
+
+            if (modoEdicaoCargo) {
+                await atualizarCargo(cargoEditando.ID_Cargo, formDataCargo);
+                alert('✅ Cargo atualizado com sucesso!');
+            } else {
+                await criarCargo(formDataCargo);
+                alert('✅ Cargo criado com sucesso!');
+            }
+
+            await carregarDados();
+            fecharModalCargo();
+
+        } catch (error) {
+            console.error('Erro ao salvar cargo:', error);
+            const serverErrors = error.response?.data?.errors;
+            if (Array.isArray(serverErrors) && serverErrors.length > 0) {
+                alert('❌ Erro ao salvar cargo:\n' + serverErrors.join('\n'));
+            } else {
+                alert('❌ Erro ao salvar cargo: ' + (error.response?.data?.error || error.message));
+            }
+        } finally {
+            setSalvandoCargo(false);
+        }
+    };
+
+    const handleDeletarCargo = async (cargo) => {
+        const confirmar = window.confirm(
+            `⚠️ Tem certeza que deseja excluir o cargo "${cargo.Nome_Cargo}"?\n\nEsta ação não pode ser desfeita.`
+        );
+
+        if (!confirmar) return;
+
+        try {
+            await deletarCargo(cargo.ID_Cargo);
+            alert('✅ Cargo excluído com sucesso!');
+            await carregarDados();
+        } catch (error) {
+            console.error('Erro ao deletar cargo:', error);
+            if (error.response?.data?.error?.includes('funcionário')) {
+                alert('❌ Não é possível excluir este cargo pois existem funcionários vinculados.');
+            } else {
+                alert('❌ Erro ao deletar cargo: ' + (error.response?.data?.error || error.message));
+            }
+        }
+    };
+
+    // ========================================================
+    // �🎨 RENDERIZAÇÃO
     // ========================================================
 
     if (carregando) {
@@ -263,53 +370,88 @@ function Funcionarios() {
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">
-                        Funcionários
+                        Funcionários & Cargos
                     </h1>
                     <p className="text-gray-600 mt-1">
-                        Gerencie a equipe da padaria
+                        Gerencie a equipe e os cargos da padaria
                     </p>
                 </div>
 
                 <Button
                     variant="primary"
                     leftIcon={<Plus size={20} />}
-                    onClick={abrirModalCriar}
+                    onClick={abaAtiva === 'funcionarios' ? abrirModalCriar : abrirModalCriarCargo}
                 >
-                    Novo Funcionário
+                    {abaAtiva === 'funcionarios' ? 'Novo Funcionário' : 'Novo Cargo'}
                 </Button>
             </div>
 
-            {/* ===== CARD DE FILTROS ===== */}
-            <Card>
-                <Card.Body>
-                    <div className="flex gap-4">
-                        <div className="flex-1">
-                            <select
-                                value={filtros.cargo}
-                                onChange={handleCargoChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            >
-                                <option value="">Todos os cargos</option>
-                                {cargos.map(cargo => (
-                                    <option key={cargo.ID_Cargo} value={cargo.ID_Cargo}>
-                                        {cargo.Nome_Cargo}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+            {/* ===== ABAS ===== */}
+            <div className="border-b border-gray-200">
+                <nav className="-mb-px flex space-x-8">
+                    <button
+                        onClick={() => setAbaAtiva('funcionarios')}
+                        className={`
+                            py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2
+                            ${abaAtiva === 'funcionarios'
+                                ? 'border-primary-500 text-primary-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }
+                        `}
+                    >
+                        <Users size={20} />
+                        Funcionários ({funcionarios.length})
+                    </button>
+                    <button
+                        onClick={() => setAbaAtiva('cargos')}
+                        className={`
+                            py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2
+                            ${abaAtiva === 'cargos'
+                                ? 'border-primary-500 text-primary-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }
+                        `}
+                    >
+                        <Briefcase size={20} />
+                        Cargos ({cargos.length})
+                    </button>
+                </nav>
+            </div>
 
-                        {filtros.cargo && (
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={limparFiltros}
-                            >
-                                Limpar
-                            </Button>
-                        )}
-                    </div>
-                </Card.Body>
-            </Card>
+            {/* ===== CONTEÚDO DAS ABAS ===== */}
+            {abaAtiva === 'funcionarios' ? (
+                <>
+                    {/* ===== CARD DE FILTROS ===== */}
+                    <Card>
+                        <Card.Body>
+                            <div className="flex gap-4">
+                                <div className="flex-1">
+                                    <select
+                                        value={filtros.cargo}
+                                        onChange={handleCargoChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    >
+                                        <option value="">Todos os cargos</option>
+                                        {cargos.map(cargo => (
+                                            <option key={cargo.ID_Cargo} value={cargo.ID_Cargo}>
+                                                {cargo.Nome_Cargo}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {filtros.cargo && (
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={limparFiltros}
+                                    >
+                                        Limpar
+                                    </Button>
+                                )}
+                            </div>
+                        </Card.Body>
+                    </Card>
 
             {/* ===== TABELA DE FUNCIONÁRIOS ===== */}
             <Card>
@@ -462,6 +604,128 @@ function Funcionarios() {
                     </div>
                 </form>
             </Modal>
+                </>
+            ) : (
+                /* ===== ABA DE CARGOS ===== */
+                <>
+                    <Card>
+                        <Card.Body noPadding>
+                            {cargos.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <div className="text-gray-400 mb-4">
+                                        <Briefcase size={48} className="mx-auto" />
+                                    </div>
+                                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                        Nenhum cargo cadastrado
+                                    </h3>
+                                    <p className="text-gray-600">
+                                        Cadastre o primeiro cargo para começar
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead className="bg-gray-50 border-b border-gray-200">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                    Código
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                    Nome do Cargo
+                                                </th>
+                                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                                    Ações
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200">
+                                            {cargos.map(cargo => (
+                                                <tr key={cargo.ID_Cargo} className="hover:bg-gray-50">
+                                                    <td className="px-6 py-4 text-sm text-gray-900">
+                                                        #{cargo.ID_Cargo}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                                                        {cargo.Nome_Cargo}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-center">
+                                                        <div className="flex justify-center gap-2">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="secondary"
+                                                                leftIcon={<Pencil size={16} />}
+                                                                onClick={() => abrirModalEditarCargo(cargo)}
+                                                            >
+                                                                Editar
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="danger"
+                                                                leftIcon={<Trash2 size={16} />}
+                                                                onClick={() => handleDeletarCargo(cargo)}
+                                                            >
+                                                                Excluir
+                                                            </Button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </Card.Body>
+                    </Card>
+
+                    {cargos.length > 0 && (
+                        <div className="text-sm text-gray-600 text-center">
+                            Mostrando {cargos.length} cargo{cargos.length !== 1 ? 's' : ''}
+                        </div>
+                    )}
+
+                    {/* ===== MODAL DE CRIAR/EDITAR CARGO ===== */}
+                    <Modal
+                        isOpen={modalCargoAberto}
+                        onClose={fecharModalCargo}
+                        title={modoEdicaoCargo ? 'Editar Cargo' : 'Novo Cargo'}
+                        size="md"
+                    >
+                        <form onSubmit={handleSubmitCargo} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Nome do Cargo *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="Nome_Cargo"
+                                    value={formDataCargo.Nome_Cargo}
+                                    onChange={handleChangeCargo}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    placeholder="Ex: Atendente, Padeiro, Gerente"
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-4">
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    onClick={fecharModalCargo}
+                                    disabled={salvandoCargo}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    variant="primary"
+                                    disabled={salvandoCargo}
+                                >
+                                    {salvandoCargo ? 'Salvando...' : modoEdicaoCargo ? 'Atualizar' : 'Criar Cargo'}
+                                </Button>
+                            </div>
+                        </form>
+                    </Modal>
+                </>
+            )}
         </div>
     );
 }

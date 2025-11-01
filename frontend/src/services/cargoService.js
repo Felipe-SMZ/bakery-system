@@ -64,7 +64,10 @@ export const buscarCargoPorId = async (id) => {
  */
 export const criarCargo = async (dados) => {
     try {
-        const response = await api.post('/cargos', dados);
+        const payload = {
+            nome_cargo: dados.Nome_Cargo.trim()
+        };
+        const response = await api.post('/cargos', payload);
         return response.data.data;
     } catch (error) {
         console.error('Erro ao criar cargo:', error);
@@ -85,7 +88,10 @@ export const criarCargo = async (dados) => {
  */
 export const atualizarCargo = async (id, dados) => {
     try {
-        const response = await api.put(`/cargos/${id}`, dados);
+        const payload = {
+            nome_cargo: dados.Nome_Cargo.trim()
+        };
+        const response = await api.put(`/cargos/${id}`, payload);
         return response.data;
     } catch (error) {
         console.error(`Erro ao atualizar cargo ${id}:`, error);
