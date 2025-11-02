@@ -71,19 +71,20 @@ function Modal({ isOpen, onClose, title, children, size = 'md' }) {
     return (
         // OVERLAY: Fundo escuro que cobre tudo
         <div
-            className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4"
             onClick={onClose} // Clique no fundo = fecha
         >
             {/* CONTAINER DO MODAL */}
             <div
                 className={`
                     relative bg-white rounded-lg shadow-xl w-full ${sizes[size]}
+                    max-h-[90vh] flex flex-col
                     animate-fade-in
                 `}
                 onClick={(e) => e.stopPropagation()} // Clique no modal = NÃO fecha
             >
                 {/* ===== CABEÇALHO ===== */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
                     {/* Título */}
                     <h2 className="text-2xl font-bold text-gray-900">
                         {title}
@@ -103,8 +104,8 @@ function Modal({ isOpen, onClose, title, children, size = 'md' }) {
                     </button>
                 </div>
 
-                {/* ===== CONTEÚDO ===== */}
-                <div className="p-6">
+                {/* ===== CONTEÚDO COM SCROLL ===== */}
+                <div className="p-6 overflow-y-auto flex-1">
                     {children}
                 </div>
             </div>
