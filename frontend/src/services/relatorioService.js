@@ -28,6 +28,7 @@ import api from './api';
 export const buscarDashboard = async () => {
     try {
         const response = await api.get('/relatorios/dashboard');
+        // Backend retorna response.data.data (objeto completo)
         return response.data.data;
     } catch (error) {
         console.error('Erro ao buscar dashboard:', error);
@@ -50,9 +51,15 @@ export const buscarDashboard = async () => {
 export const buscarVendasPorPeriodo = async (dataInicio, dataFim, agrupamento = 'dia') => {
     try {
         const response = await api.get('/relatorios/vendas-periodo', {
-            params: { dataInicio, dataFim, agrupamento }
+            params: { 
+                data_inicio: dataInicio,
+                data_fim: dataFim,
+                agrupamento
+            }
         });
-        return response.data.data;
+        // Backend retorna { periodo, resumo, dados: [...] }
+        // Extrai apenas o array de dados
+        return response.data.data?.dados || [];
     } catch (error) {
         console.error('Erro ao buscar vendas por período:', error);
         throw error;
@@ -66,19 +73,16 @@ export const buscarVendasPorPeriodo = async (dataInicio, dataFim, agrupamento = 
 /**
  * Busca ranking de produtos mais vendidos
  * 
- * @param {String} dataInicio - Data início (opcional)
- * @param {String} dataFim - Data fim (opcional)
- * @param {Number} limite - Quantidade de produtos (padrão: 10)
+ * @param {Object} filtros - Objeto com filtros { data_inicio, data_fim, limite }
  * @returns {Promise<Array>} Lista de produtos
  */
-export const buscarProdutosMaisVendidos = async (dataInicio = null, dataFim = null, limite = 10) => {
+export const buscarProdutosMaisVendidos = async (filtros = {}) => {
     try {
-        const params = { limite };
-        if (dataInicio) params.dataInicio = dataInicio;
-        if (dataFim) params.dataFim = dataFim;
-
-        const response = await api.get('/relatorios/produtos-mais-vendidos', { params });
-        return response.data.data;
+        const response = await api.get('/relatorios/produtos-mais-vendidos', { 
+            params: filtros 
+        });
+        // Extrai o array de dados
+        return response.data.data?.dados || [];
     } catch (error) {
         console.error('Erro ao buscar produtos mais vendidos:', error);
         throw error;
@@ -92,18 +96,16 @@ export const buscarProdutosMaisVendidos = async (dataInicio = null, dataFim = nu
 /**
  * Busca distribuição de vendas por forma de pagamento
  * 
- * @param {String} dataInicio - Data início (opcional)
- * @param {String} dataFim - Data fim (opcional)
+ * @param {Object} filtros - Objeto com filtros { data_inicio, data_fim }
  * @returns {Promise<Array>} Distribuição por forma de pagamento
  */
-export const buscarVendasPorFormaPagamento = async (dataInicio = null, dataFim = null) => {
+export const buscarVendasPorFormaPagamento = async (filtros = {}) => {
     try {
-        const params = {};
-        if (dataInicio) params.dataInicio = dataInicio;
-        if (dataFim) params.dataFim = dataFim;
-
-        const response = await api.get('/relatorios/vendas-por-forma-pagamento', { params });
-        return response.data.data;
+        const response = await api.get('/relatorios/vendas-por-forma-pagamento', { 
+            params: filtros 
+        });
+        // Extrai o array de dados
+        return response.data.data?.dados || [];
     } catch (error) {
         console.error('Erro ao buscar vendas por forma de pagamento:', error);
         throw error;
@@ -117,18 +119,16 @@ export const buscarVendasPorFormaPagamento = async (dataInicio = null, dataFim =
 /**
  * Busca ranking de funcionários por vendas
  * 
- * @param {String} dataInicio - Data início (opcional)
- * @param {String} dataFim - Data fim (opcional)
+ * @param {Object} filtros - Objeto com filtros { data_inicio, data_fim }
  * @returns {Promise<Array>} Lista de funcionários
  */
-export const buscarDesempenhoFuncionarios = async (dataInicio = null, dataFim = null) => {
+export const buscarDesempenhoFuncionarios = async (filtros = {}) => {
     try {
-        const params = {};
-        if (dataInicio) params.dataInicio = dataInicio;
-        if (dataFim) params.dataFim = dataFim;
-
-        const response = await api.get('/relatorios/desempenho-funcionarios', { params });
-        return response.data.data;
+        const response = await api.get('/relatorios/desempenho-funcionarios', { 
+            params: filtros 
+        });
+        // Extrai o array de dados
+        return response.data.data?.dados || [];
     } catch (error) {
         console.error('Erro ao buscar desempenho de funcionários:', error);
         throw error;
@@ -147,7 +147,8 @@ export const buscarDesempenhoFuncionarios = async (dataInicio = null, dataFim = 
 export const buscarClientesDevedores = async () => {
     try {
         const response = await api.get('/relatorios/clientes-devedores');
-        return response.data.data;
+        // Backend retorna { resumo, dados: [...] }
+        return response.data.data?.dados || [];
     } catch (error) {
         console.error('Erro ao buscar clientes devedores:', error);
         throw error;
@@ -169,7 +170,8 @@ export const buscarProdutosEstoqueBaixo = async (limite = 50) => {
         const response = await api.get('/relatorios/produtos-estoque-baixo', {
             params: { limite }
         });
-        return response.data.data;
+        // Backend retorna { limite, resumo, dados: [...] }
+        return response.data.data?.dados || [];
     } catch (error) {
         console.error('Erro ao buscar produtos com estoque baixo:', error);
         throw error;

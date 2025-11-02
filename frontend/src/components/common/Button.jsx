@@ -38,6 +38,8 @@ const Button = ({
     onClick,            // Função ao clicar
     type = 'button',    // Padrão: button
     className = '',     // Classes extras
+    leftIcon,           // Ícone à esquerda (componente)
+    rightIcon,          // Ícone à direita (componente)
     ...rest             // Outras props (spread operator)
 }) => {
 
@@ -121,7 +123,11 @@ const Button = ({
             disabled={disabled}
             {...rest} // Passa todas as outras props (id, name, etc)
         >
-            {children}
+            <span className="flex items-center justify-center gap-2">
+                {leftIcon && <span className="flex-shrink-0">{leftIcon}</span>}
+                {children}
+                {rightIcon && <span className="flex-shrink-0">{rightIcon}</span>}
+            </span>
         </button>
     );
 };
