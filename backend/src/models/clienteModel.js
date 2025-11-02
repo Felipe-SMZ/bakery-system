@@ -1,13 +1,31 @@
-// src/models/clienteModel.js
+﻿// src/models/clienteModel.js
 const db = require('../config/db');
 
 class ClienteModel {
 
-  // Listar todos os clientes
+  // Listar todos os clientes COM cálculo de crédito
   static async listarTodos() {
     const [rows] = await db.query(`
-      SELECT * FROM Cliente 
-      ORDER BY Nome
+      SELECT
+        c.*,
+        COALESCE(SUM(CASE
+          WHEN v.Tipo_Pagamento = 'fiado'
+          AND v.Data_Pagamento_Fiado IS NULL
+          AND v.Status = 'finalizada'
+          THEN v.Valor_Total
+          ELSE 0
+        END), 0) AS Total_Em_Aberto,
+        (c.Limite_Fiado - COALESCE(SUM(CASE
+          WHEN v.Tipo_Pagamento = 'fiado'
+          AND v.Data_Pagamento_Fiado IS NULL
+          AND v.Status = 'finalizada'
+          THEN v.Valor_Total
+          ELSE 0
+        END), 0)) AS Credito_Disponivel
+      FROM Cliente c
+      LEFT JOIN Venda v ON c.ID_Cliente = v.ID_Cliente
+      GROUP BY c.ID_Cliente
+      ORDER BY c.Nome
     `);
     return rows;
   }
@@ -21,21 +39,58 @@ class ClienteModel {
     return rows[0];
   }
 
-  // Filtrar por status
+  // Filtrar por status COM cálculo de crédito
   static async filtrarPorStatus(status) {
-    const [rows] = await db.query(
-      'SELECT * FROM Cliente WHERE Status = ? ORDER BY Nome',
-      [status]
-    );
+    const [rows] = await db.query(`
+      SELECT
+        c.*,
+        COALESCE(SUM(CASE 
+          WHEN v.Tipo_Pagamento = 'fiado'
+          AND v.Data_Pagamento_Fiado IS NULL
+          AND v.Status = 'finalizada'
+          THEN v.Valor_Total
+          ELSE 0
+        END), 0) AS Total_Em_Aberto,
+        (c.Limite_Fiado - COALESCE(SUM(CASE
+          WHEN v.Tipo_Pagamento = 'fiado'
+          AND v.Data_Pagamento_Fiado IS NULL
+          AND v.Status = 'finalizada'
+          THEN v.Valor_Total
+          ELSE 0
+        END), 0)) AS Credito_Disponivel
+      FROM Cliente c
+      LEFT JOIN Venda v ON c.ID_Cliente = v.ID_Cliente
+      WHERE c.Status = ?
+      GROUP BY c.ID_Cliente
+      ORDER BY c.Nome
+    `, [status]);
     return rows;
   }
 
-  // Buscar por nome ou telefone
+  // Buscar por nome ou telefone COM cálculo de crédito
   static async buscar(termo) {
     const [rows] = await db.query(`
-      SELECT * FROM Cliente 
-      WHERE Nome LIKE ? OR Telefone LIKE ?
-      ORDER BY Nome
+      SELECT
+        c.*,
+        COALESCE(SUM(CASE
+          WHEN v.Tipo_Pagamento = 'fiado'
+          AND v.Data_Pagamento_Fiado IS NULL
+          AND v.Status = 'finalizada'
+          THEN v.Valor_Total
+          ELSE 0
+        END), 0) AS Total_Em_Aberto,
+        (c.Limite_Fiado - COALESCE(SUM(CASE
+          WHEN v.Tipo_Pagamento = 'fiado'
+          AND v.Data_Pagamento_Fiado IS NULL
+          AND v.Status = 'finalizada'
+          THEN v.Valor_Total
+          ELSE 0
+        END), 0)) AS Credito_Disponivel
+      FROM Cliente c
+      LEFT JOIN Venda v ON c.ID_Cliente = v.ID_Cliente
+      WHERE c.Nome LIKE ? OR c.Telefone LIKE ?
+      GROUP BY c.ID_Cliente
+      ORDER BY c.Nome
     `, [`%${termo}%`, `%${termo}%`]);
     return rows;
   }
@@ -43,7 +98,7 @@ class ClienteModel {
   // Criar novo cliente
   static async criar(dados) {
     const [result] = await db.query(`
-      INSERT INTO Cliente 
+      INSERT INTO Cliente
       (Nome, Telefone, Status, Limite_Fiado, Rua, Numero, Bairro, Cidade, CEP)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
@@ -63,7 +118,7 @@ class ClienteModel {
   // Atualizar cliente
   static async atualizar(id, dados) {
     const [result] = await db.query(`
-      UPDATE Cliente 
+      UPDATE Cliente
       SET Nome = ?,
           Telefone = ?,
           Status = ?,
@@ -119,7 +174,7 @@ class ClienteModel {
   // Buscar vendas do cliente
   static async buscarVendas(id) {
     const [rows] = await db.query(`
-      SELECT 
+      SELECT
         v.ID_Venda,
         v.Data_Hora,
         v.Tipo_Pagamento,
@@ -127,10 +182,10 @@ class ClienteModel {
         v.Data_Pagamento_Fiado,
         v.Status,
         f.Nome AS Funcionario,
-        CASE 
-          WHEN v.Tipo_Pagamento = 'fiado' AND v.Data_Pagamento_Fiado IS NULL 
+        CASE
+          WHEN v.Tipo_Pagamento = 'fiado' AND v.Data_Pagamento_Fiado IS NULL
           THEN 'Em Aberto'
-          WHEN v.Tipo_Pagamento = 'fiado' AND v.Data_Pagamento_Fiado IS NOT NULL 
+          WHEN v.Tipo_Pagamento = 'fiado' AND v.Data_Pagamento_Fiado IS NOT NULL
           THEN 'Quitado'
           ELSE 'Pago'
         END AS Status_Pagamento
@@ -158,21 +213,21 @@ class ClienteModel {
   // Obter crédito disponível (usando VIEW)
   static async obterCreditoDisponivel(id) {
     const [rows] = await db.query(`
-      SELECT 
+      SELECT
         c.Limite_Fiado,
-        COALESCE(SUM(CASE 
-          WHEN v.Tipo_Pagamento = 'fiado' 
-          AND v.Data_Pagamento_Fiado IS NULL 
+        COALESCE(SUM(CASE
+          WHEN v.Tipo_Pagamento = 'fiado'
+          AND v.Data_Pagamento_Fiado IS NULL
           AND v.Status = 'finalizada'
-          THEN v.Valor_Total 
-          ELSE 0 
+          THEN v.Valor_Total
+          ELSE 0
         END), 0) AS Total_Em_Aberto,
-        (c.Limite_Fiado - COALESCE(SUM(CASE 
-          WHEN v.Tipo_Pagamento = 'fiado' 
-          AND v.Data_Pagamento_Fiado IS NULL 
+        (c.Limite_Fiado - COALESCE(SUM(CASE
+          WHEN v.Tipo_Pagamento = 'fiado'
+          AND v.Data_Pagamento_Fiado IS NULL
           AND v.Status = 'finalizada'
-          THEN v.Valor_Total 
-          ELSE 0 
+          THEN v.Valor_Total
+          ELSE 0
         END), 0)) AS Credito_Disponivel
       FROM Cliente c
       LEFT JOIN Venda v ON c.ID_Cliente = v.ID_Cliente
@@ -185,21 +240,21 @@ class ClienteModel {
   // Listar clientes com crédito excedido
   static async listarCreditoExcedido() {
     const [rows] = await db.query(`
-      SELECT 
+      SELECT
         c.*,
-        COALESCE(SUM(CASE 
-          WHEN v.Tipo_Pagamento = 'fiado' 
-          AND v.Data_Pagamento_Fiado IS NULL 
+        COALESCE(SUM(CASE
+          WHEN v.Tipo_Pagamento = 'fiado'
+          AND v.Data_Pagamento_Fiado IS NULL
           AND v.Status = 'finalizada'
-          THEN v.Valor_Total 
-          ELSE 0 
+          THEN v.Valor_Total
+          ELSE 0
         END), 0) AS Total_Em_Aberto,
-        (c.Limite_Fiado - COALESCE(SUM(CASE 
-          WHEN v.Tipo_Pagamento = 'fiado' 
-          AND v.Data_Pagamento_Fiado IS NULL 
+        (c.Limite_Fiado - COALESCE(SUM(CASE
+          WHEN v.Tipo_Pagamento = 'fiado'
+          AND v.Data_Pagamento_Fiado IS NULL
           AND v.Status = 'finalizada'
-          THEN v.Valor_Total 
-          ELSE 0 
+          THEN v.Valor_Total
+          ELSE 0
         END), 0)) AS Credito_Disponivel
       FROM Cliente c
       LEFT JOIN Venda v ON c.ID_Cliente = v.ID_Cliente
@@ -213,7 +268,7 @@ class ClienteModel {
   // Listar clientes devedores (com fiado em aberto)
   static async listarDevedores() {
     const [rows] = await db.query(`
-      SELECT 
+      SELECT
         c.ID_Cliente,
         c.Nome,
         c.Telefone,
