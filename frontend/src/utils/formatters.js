@@ -175,27 +175,49 @@ export const getStatusColor = (status) => {
 // ============================================================
 
 /**
- * Formata quantidade com unidade de medida
+ * Formata quantidade com unidade de acordo com o tipo
+ * - Para "unidade" e "fatia": exibe como número inteiro (1, 2, 10)
+ * - Para "kg": exibe com até 3 casas decimais (1.5, 2.750)
  * 
- * @param {Number} quantidade - Quantidade
- * @param {String} unidade - Unidade de medida
- * @returns {String} - Quantidade formatada
+ * @param {Number} quantidade - Quantidade a ser formatada
+ * @param {String} unidade - Unidade de medida ("unidade", "fatia", "kg")
+ * @returns {String} - Quantidade formatada com unidade abreviada
  * 
- * Exemplo de uso:
- * formatarQuantidade(10, 'unidade') => "10 un"
- * formatarQuantidade(2.5, 'kg') => "2,5 kg"
+ * Exemplos de uso:
+ * formatarQuantidade(1, 'unidade') => "1 un"
+ * formatarQuantidade(1.000, 'unidade') => "1 un"
+ * formatarQuantidade(10, 'fatia') => "10 fatias"
+ * formatarQuantidade(1.5, 'kg') => "1,5 kg"
+ * formatarQuantidade(2.750, 'kg') => "2,750 kg"
  */
 export const formatarQuantidade = (quantidade, unidade) => {
     if (!quantidade && quantidade !== 0) return '-';
 
+    const unidadeLower = unidade?.toLowerCase() || '';
+    
     const unidadeAbrev = {
         'unidade': 'un',
         'kg': 'kg',
         'fatia': 'fatias'
     };
 
-    const qtd = Number(quantidade).toLocaleString('pt-BR');
-    const un = unidadeAbrev[unidade] || unidade;
+    let qtd;
+    
+    // Para unidade e fatia: exibe como número inteiro (sem separador de milhar)
+    if (unidadeLower === 'unidade' || unidadeLower === 'fatia') {
+        qtd = parseInt(quantidade).toString();
+    }
+    // Para kg: exibe com decimais, substituindo ponto por vírgula
+    else if (unidadeLower === 'kg') {
+        // Remove zeros desnecessários à direita, mas mantém até 3 casas decimais
+        qtd = parseFloat(quantidade).toFixed(3).replace(/\.?0+$/, '').replace('.', ',');
+    }
+    // Fallback: exibe como veio
+    else {
+        qtd = quantidade.toString();
+    }
+
+    const un = unidadeAbrev[unidadeLower] || unidade;
 
     return `${qtd} ${un}`;
 };
