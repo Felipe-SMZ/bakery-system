@@ -1,3 +1,4 @@
+![bakery logo](bakerylogo.png)
 ## 🍞 Bakery System - Gestão de Padaria
 
 Sistema fullstack para gerenciamento de padarias, desenvolvido como trabalho acadêmico. O projeto contempla controle de produtos, clientes, funcionários, vendas e crédito (fiado), com foco em regras de negócio reais e documentação robusta.
