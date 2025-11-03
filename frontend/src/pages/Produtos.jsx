@@ -9,7 +9,7 @@ import Loading from '../components/common/Loading';
 import Modal from '../components/common/Modal';
 import { listarProdutos, criarProduto, atualizarProduto, deletarProduto } from '../services/produtoService';
 import { listarTiposProduto } from '../services/tipoProdutoService';
-import { formatarMoeda } from '../utils/formatters';
+import { formatarMoeda, formatarQuantidade } from '../utils/formatters';
 
 function Produtos() {
   // ========================================================
@@ -395,8 +395,8 @@ function Produtos() {
                         {formatarMoeda(produto.Preco_Base)}
                       </td>
                       <td className="px-6 py-4 text-sm text-right">
-                        <span className={`font-medium ${produto.Estoque_Atual < 50 ? 'text-danger-600' : 'text-gray-900'}`}>
-                          {produto.Estoque_Atual}
+                        <span className={`font-medium ${parseFloat(produto.Estoque_Atual) < 50 ? 'text-danger-600' : 'text-gray-900'}`}>
+                          {formatarQuantidade(produto.Estoque_Atual, produto.Unidade_Medida)}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-center">
